@@ -314,7 +314,11 @@ Nếu không tìm được solution khả thi:
 
 ## 👨‍💻 Tác giả
 
-Được phát triển cho môn Tối ưu hóa / Metaheuristics.
+Được phát triển cho môn Tối ưu hóa lập kế hoạch bởi nhóm 2 với các thành viên:
+- Hà Minh Hiếu
+- Trần Đức Chính
+- Đoàn Duy Tùng
+- Ngô Đức Chung
 
 ## 📄 License
 
