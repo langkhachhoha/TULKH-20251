@@ -1,332 +1,225 @@
-# Vehicle Routing Problem with Time Windows (VRPTW) Solver
+# VRPTW Optimization Project
 
-Bộ giải thuật tối ưu cho bài toán **Vehicle Routing Problem with Time Windows** sử dụng 2 thuật toán metaheuristic với tổng cộng 12 biến thể.
+Dự án tối ưu hóa bài toán Vehicle Routing Problem with Time Windows (VRPTW) sử dụng nhiều thuật toán metaheuristic khác nhau.
 
-## 📋 Mô tả bài toán
-
-Một nhân viên giao hàng xuất phát từ kho (điểm 0) và cần giao hàng cho N khách hàng (1, 2, ..., N). Mỗi khách hàng i có:
-- **Time window**: Phải được giao hàng trong khoảng thời gian từ `e(i)` đến `l(i)`
-- **Service duration**: Giao hàng mất `d(i)` đơn vị thời gian
-- **Travel time**: Thời gian di chuyển từ điểm i đến j là `t(i,j)`
-
-**Mục tiêu**: Tìm lộ trình giao hàng sao cho tổng thời gian di chuyển là **ngắn nhất** và thỏa mãn tất cả ràng buộc time window.
-
-## 📁 Cấu trúc dự án
+## Cấu trúc dự án
 
 ```
 TULKH/
-├── local_search.py      # Local Search với 6 biến thể
-├── tabu_search.py       # Tabu Search với 6 biến thể
-└── README.md           # File hướng dẫn này
+├── main.py              # File chính để chạy tất cả các thuật toán
+├── local_search.py      # 6 modes của Local Search
+├── tabu_search.py       # 6 modes của Tabu Search (chỉ chạy 3 mode đầu)
+├── GA.py                # Genetic Algorithm
+├── result.txt           # Kết quả chạy thuật toán
+└── README.md            # File này
+
+Input folder:
+/Users/apple/Downloads/TSP_timeWindow_OptimalPlanning_20222_HUST-main/testcase/input/
+├── script.py            # Script tạo test cases tự động
+├── N5.txt, N10.txt, ... # Test cases gốc (10 files)
+└── N5_v1.txt, ...       # Test cases sinh tự động (50 files)
 ```
 
-## 🔍 Các thuật toán
+## Các thuật toán
 
-### 1. Local Search (`local_search.py`)
+### Exact Algorithms (Thuật toán chính xác)
 
-Thuật toán tìm kiếm cục bộ với 6 biến thể khác nhau:
+#### 1. Backtracking
+- Thuật toán quay lui với pruning
+- Tìm nghiệm tối ưu chính xác
+- Chỉ áp dụng cho bài toán nhỏ (N ≤ 10)
+- Độ phức tạp: O(N!)
 
-| Mode | Tên thuật toán | Mô tả |
-|------|----------------|-------|
-| **1** | 2-opt with restart | 2-opt với restart mechanism và first improvement |
-| **2** | Variable Neighborhood Descent | Kết hợp 3 loại move: swap, insert, reverse |
-| **3** | Iterated Local Search | ILS với perturbation có độ mạnh thay đổi |
-| **4** | Simulated Annealing | SA với temperature cooling và multiple moves |
-| **5** | GRASP | Greedy Randomized Adaptive Search Procedure |
-| **6** | Late Acceptance Hill Climbing | Hill climbing với late acceptance criterion |
+#### 2. Branch and Bound
+- Thuật toán nhánh cận với priority queue
+- Sử dụng lower bound để cắt tỉa
+- Hiệu quả hơn backtracking
+- Chỉ áp dụng cho bài toán nhỏ (N ≤ 15)
 
-**Đặc điểm:**
-- ✅ Nhanh, phù hợp với bài toán nhỏ-trung bình
-- ✅ 3 chiến lược khởi tạo khác nhau
-- ✅ First improvement để tăng tốc
-- ✅ Escape mechanisms để thoát local optima
+#### 3. OR-Tools
+- Sử dụng thư viện Google OR-Tools
+- Constraint Programming solver
+- Yêu cầu cài đặt: `pip install ortools`
+- Có thể giải bài toán lớn hơn
 
-### 2. Tabu Search (`tabu_search.py`)
+### Metaheuristic Algorithms (Thuật toán xấp xỉ)
 
-Thuật toán Tabu Search với 6 biến thể nâng cao:
+### Local Search (6 modes)
+1. **Mode 1**: 2-opt with restart and first improvement
+2. **Mode 2**: Variable neighborhood descent (2-opt + insert + swap)
+3. **Mode 3**: Iterated local search with perturbation
+4. **Mode 4**: Simulated annealing with 2-opt
+5. **Mode 5**: GRASP (Greedy Randomized Adaptive Search)
+6. **Mode 6**: Late acceptance hill climbing
 
-| Mode | Tên thuật toán | Mô tả |
-|------|----------------|-------|
-| **1** | Reactive Tabu Search | Adaptive tabu tenure với intensification/diversification |
-| **2** | Robust Tabu Search | Strategic oscillation với multiple move types |
-| **3** | Adaptive Tabu Search | Aspiration plus với adaptive parameters |
-| **4** | Path Relinking Tabu Search | Elite solutions pool với path relinking |
-| **5** | Granular Tabu Search | Candidate lists dựa trên cấu trúc bài toán |
-| **6** | Probabilistic Tabu Search | Probabilistic tabu với threshold accepting |
+### Tabu Search (3 modes đầu)
+1. **Mode 1**: Reactive tabu search with intensification/diversification
+2. **Mode 2**: Robust tabu search with strategic oscillation
+3. **Mode 3**: Adaptive tabu search with aspiration plus
 
-**Đặc điểm:**
-- ✅ Chất lượng cao, phù hợp với bài toán trung bình-lớn
-- ✅ Memory structures (tabu list, frequency, elite pool)
-- ✅ Multiple move types và aspiration criteria
-- ✅ Diversification mechanisms
+### Genetic Algorithm
+- Population-based evolutionary algorithm
+- Order Crossover (OX)
+- Swap and Inversion mutations
+- Elitism strategy
+- Local search improvement (2-opt)
 
-## 🚀 Cách sử dụng
+## Giới hạn thời gian
 
-### 1. Cài đặt
+Mỗi phương pháp có giới hạn thời gian chạy dựa trên kích thước bài toán:
 
-Yêu cầu: **Python 3.8+**
+| Kích thước (N) | Thời gian tối đa |
+|----------------|------------------|
+| N ≤ 100        | 60 giây          |
+| 100 < N ≤ 500  | 120 giây         |
+| N > 500        | 180 giây         |
 
-Không cần cài đặt thư viện bổ sung (chỉ dùng thư viện chuẩn).
+## Test Cases
 
-### 2. Chạy thuật toán
+### Test cases gốc (10 files)
+- N5.txt, N10.txt, N100.txt, N200.txt, N300.txt
+- N500.txt, N600.txt, N700.txt, N900.txt, N1000.txt
 
-#### Bước 1: Chọn MODE
+### Test cases tự động sinh (50 files)
+- 5 phiên bản cho mỗi kích thước: N5_v1.txt đến N5_v5.txt, ...
+- Tổng cộng: **60 test cases**
 
-Mở file thuật toán và chỉnh biến `MODE`:
+## Cách sử dụng
 
-```python
-# Trong local_search.py hoặc tabu_search.py
-MODE = 1  # Đổi thành 1, 2, 3, 4, 5, hoặc 6
-```
+### 1. Cài đặt (Optional - cho OR-Tools)
 
-#### Bước 2: Chạy với input
-
-**Từ file:**
 ```bash
-python local_search.py < input.txt
-python tabu_search.py < input.txt
+pip install ortools
 ```
 
-**Từ stdin:**
+### 2. Tạo test cases mới
+
 ```bash
-python local_search.py
-# Nhập dữ liệu theo format bên dưới
+cd /Users/apple/Downloads/TSP_timeWindow_OptimalPlanning_20222_HUST-main/testcase/input
+python3 script.py
 ```
 
-### 3. Format Input
+Script sẽ tạo 5 phiên bản cho mỗi kích thước (N5, N10, N100, N200, N300, N500, N600, N700, N900, N1000).
+
+### 3. Chạy tất cả thuật toán
+
+```bash
+cd /Users/apple/TULKH
+python3 main.py
+```
+
+Chương trình sẽ tự động:
+- Tìm tất cả test cases trong folder input (60 test cases)
+- Chạy **13 thuật toán** cho mỗi test case:
+  - **10 Metaheuristics**: 6 Local Search + 3 Tabu Search + 1 GA
+  - **3 Exact algorithms**: Backtracking + Branch&Bound + OR-Tools
+- Lưu kết quả vào `result.txt`
+- Hiển thị tiến độ và thời gian ước tính
+
+**Lưu ý**: 
+- Exact algorithms chạy cho **tất cả** test cases
+- Với N > 15, exact algorithms có thể TLE (Time Limit Exceeded)
+- Metaheuristics luôn cho kết quả trong thời gian giới hạn
+
+### 4. Xem kết quả
+
+```bash
+cat result.txt
+```
+
+Format kết quả:
+```
+============================================================
+Test Case: N5
+============================================================
+LocalSearch_Mode1: 310
+LocalSearch_Mode2: 310
+LocalSearch_Mode3: 310
+LocalSearch_Mode4: 310
+LocalSearch_Mode5: 310
+LocalSearch_Mode6: 310
+TabuSearch_Mode1: 310
+TabuSearch_Mode2: 310
+TabuSearch_Mode3: 310
+GeneticAlgorithm: 310
+Backtracking: 310
+BranchAndBound: 310
+ORTools: 310
+```
+
+**Chú thích**:
+- Tất cả test cases đều có 13 kết quả
+- Exact algorithms có thể trả về "TLE" nếu vượt quá thời gian giới hạn
+- Ví dụ: `Backtracking: TLE` hoặc `BranchAndBound: 310`
+
+## Format file test case
+
+Mỗi file test case có format:
 
 ```
 N
-e(1) l(1) d(1)
-e(2) l(2) d(2)
+e1 l1 d1
+e2 l2 d2
 ...
-e(N) l(N) d(N)
-t(0,0) t(0,1) ... t(0,N)
-t(1,0) t(1,1) ... t(1,N)
+eN lN dN
+t00 t01 ... t0N
+t10 t11 ... t1N
 ...
-t(N,0) t(N,1) ... t(N,N)
+tN0 tN1 ... tNN
 ```
 
-**Trong đó:**
-- `N`: Số lượng khách hàng (1 ≤ N ≤ 1000)
-- `e(i), l(i), d(i)`: Earliest time, latest time, duration của khách hàng i
-- `t(i,j)`: Ma trận thời gian di chuyển (N+1) × (N+1)
-
-### 4. Format Output
-
-```
-N
-s(1) s(2) ... s(N)
-```
-
-**Trong đó:**
+Trong đó:
 - `N`: Số lượng khách hàng
-- `s(1) s(2) ... s(N)`: Thứ tự giao hàng (permutation của 1..N)
+- `ei li di`: Earliest time, Latest time, Duration của khách hàng i
+- `tij`: Travel time từ vị trí i đến j (i,j = 0..N, với 0 là depot)
 
-## 📊 Ví dụ
+## Đặc điểm kỹ thuật
 
-### Input (`input.txt`)
+### Đảm bảo tính khả thi
+- Tất cả solutions đều được kiểm tra feasibility
+- Chỉ chấp nhận solutions thỏa mãn time window constraints
+- Nếu không tìm được solution khả thi, thử các strategies khác
 
-```
-5
-50 90 20
-300 350 15
-215 235 5
-374 404 20
-107 147 20
-0 50 10 100 70 10
-50 0 40 70 20 40
-10 40 0 80 60 0
-100 70 80 0 70 80
-70 20 60 70 0 60
-10 40 0 80 60 0
-```
+### Quản lý thời gian
+- Mỗi phương pháp có time limit riêng
+- Khi hết thời gian, lấy best solution hiện tại
+- Hiển thị progress và estimated time remaining
 
-### Chạy thuật toán
+### Strategies khởi tạo
+1. **Nearest**: Chọn customer gần nhất có thể reach được
+2. **Earliest**: Sắp xếp theo earliest time window
+3. **Latest**: Sắp xếp theo latest time window
 
-```bash
-# Local Search Mode 3 (ILS)
-python local_search.py < input.txt
+## Thống kê
 
-# Tabu Search Mode 1 (Reactive)
-python tabu_search.py < input.txt
-```
+| Kích thước | Số test cases | Thời gian ước tính/test case |
+|------------|---------------|------------------------------|
+| N5         | 6             | ~5 giây                      |
+| N10        | 6             | ~10 giây                     |
+| N100       | 6             | ~10 phút                     |
+| N200       | 6             | ~20 phút                     |
+| N300       | 6             | ~20 phút                     |
+| N500       | 6             | ~20 phút                     |
+| N600       | 6             | ~30 phút                     |
+| N700       | 6             | ~30 phút                     |
+| N900       | 6             | ~30 phút                     |
+| N1000      | 6             | ~30 phút                     |
 
-### Output
+**Tổng thời gian ước tính**: ~3-4 giờ cho tất cả 60 test cases
 
-```
-5
-1 5 3 2 4
-```
+## Yêu cầu hệ thống
 
-## ⚙️ Cấu hình tham số
+- Python 3.6+
+- Không cần thư viện bên ngoài (chỉ dùng standard library)
+- RAM: Tối thiểu 2GB (khuyến nghị 4GB cho test cases lớn)
 
-### Local Search
+## Ghi chú
 
-Các tham số có thể điều chỉnh trong code:
+- Kết quả có thể khác nhau giữa các lần chạy do tính ngẫu nhiên của các thuật toán
+- Để có kết quả reproducible, đã set `random.seed(42)` trong main.py
+- File `result.txt` sẽ bị ghi đè mỗi khi chạy main.py
+- Backup kết quả cũ nếu cần thiết trước khi chạy lại
 
-```python
-# Số iterations tối đa
-max_iter = 10000
+## Tác giả
 
-# Cho GRASP (Mode 5)
-num_constructions = 10
-alpha = 0.3  # Randomization parameter
-
-# Cho SA (Mode 4)
-temp = 100.0
-cooling_rate = 0.995
-min_temp = 0.1
-```
-
-### Tabu Search
-
-```python
-# Số iterations tối đa
-max_iter = 2000
-
-# Tabu tenure
-tabu_tenure = 7-15  # Tùy mode
-
-# Path Relinking (Mode 4)
-max_elite = 5
-
-# Granular (Mode 5)
-granular_threshold = 100  # Time window threshold
-```
-
-## 📈 So sánh thuật toán
-
-| Tiêu chí | Local Search | Tabu Search |
-|----------|--------------|-------------|
-| **Tốc độ** | ⭐⭐⭐⭐⭐ Rất nhanh | ⭐⭐⭐⭐ Nhanh |
-| **Chất lượng** | ⭐⭐⭐ Tốt | ⭐⭐⭐⭐⭐ Rất tốt |
-| **Bài toán nhỏ (N<50)** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **Bài toán lớn (N>100)** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **Đơn giản** | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-
-## 💡 Khuyến nghị
-
-### Chọn thuật toán
-
-- **Local Search**: Dùng khi cần kết quả nhanh, bài toán nhỏ-trung bình
-  - Mode 1-3: Nhanh nhất, chất lượng tốt
-  - Mode 4-5: Cân bằng tốc độ và chất lượng
-  - Mode 6: Thử nghiệm khi các mode khác stuck
-
-- **Tabu Search**: Dùng khi cần chất lượng cao, bài toán trung bình-lớn
-  - Mode 1: Tốt nhất cho hầu hết trường hợp
-  - Mode 3-4: Chất lượng cao nhất
-  - Mode 5: Tốt cho bài toán có cấu trúc đặc biệt
-  - Mode 6: Alternative approach khi cần exploration
-
-### Tips để có kết quả tốt
-
-1. **Thử nhiều modes**: Mỗi mode phù hợp với structure khác nhau
-2. **Chạy nhiều lần**: Các thuật toán có yếu tố random
-3. **Điều chỉnh parameters**: Tùy theo kích thước bài toán
-4. **Kết hợp**: Dùng Local Search để khởi tạo, sau đó Tabu Search để refine
-
-## 🔧 Cải tiến đã implement
-
-### Khởi tạo thông minh
-- ✅ Nearest neighbor heuristic
-- ✅ Time window-based sorting (earliest, latest)
-- ✅ Multiple initial solutions
-
-### Local improvement
-- ✅ 2-opt moves
-- ✅ Insert moves
-- ✅ Reverse segment
-- ✅ First improvement strategy
-
-### Escape mechanisms
-- ✅ Restart with perturbation
-- ✅ Simulated Annealing acceptance
-- ✅ Late acceptance
-- ✅ Threshold accepting
-
-### Memory structures
-- ✅ Tabu list
-- ✅ Frequency-based memory
-- ✅ Elite solutions pool
-- ✅ Aspiration criteria
-
-### Advanced techniques
-- ✅ Variable neighborhood search
-- ✅ Path relinking
-- ✅ Granular search
-- ✅ Strategic oscillation
-- ✅ Adaptive parameters
-
-## 📝 Giải thích thuật toán
-
-### Local Search
-
-**Ý tưởng chính**: Bắt đầu từ một solution, liên tục cải thiện bằng cách thử các moves (swap, insert, reverse) cho đến khi không cải thiện được nữa.
-
-**Cách hoạt động**:
-1. Generate initial solution
-2. Explore neighborhood (các solutions gần)
-3. Move to better solution
-4. Repeat until no improvement
-5. Apply escape mechanism if stuck
-
-### Tabu Search
-
-**Ý tưởng chính**: Giống Local Search nhưng có "bộ nhớ" (tabu list) để tránh quay lại các solutions đã thăm gần đây, cho phép escape khỏi local optima.
-
-**Cách hoạt động**:
-1. Generate initial solution
-2. Explore neighborhood
-3. Move to best non-tabu neighbor (kể cả worse)
-4. Add move to tabu list
-5. Update best solution if found
-6. Repeat for max iterations
-7. Apply advanced mechanisms (aspiration, diversification, etc.)
-
-## 🐛 Xử lý lỗi
-
-### Infeasible solutions
-
-Thuật toán tự động xử lý:
-- Solutions vi phạm time windows → cost = infinity
-- Không tìm được feasible neighbor → restart/perturbation
-
-### Time windows quá chặt
-
-Nếu không tìm được solution khả thi:
-- Kiểm tra lại input (travel time, time windows)
-- Giảm strictness của time windows
-- Tăng số iterations
-
-## 📚 Tài liệu tham khảo
-
-### Papers
-- **Tabu Search**: Glover, F. (1989). "Tabu Search—Part I"
-- **ILS**: Lourenço, H. R., et al. (2003). "Iterated Local Search"
-- **GRASP**: Feo, T. A., & Resende, M. G. (1995). "Greedy Randomized Adaptive Search Procedures"
-- **VRPTW**: Solomon, M. M. (1987). "Algorithms for the Vehicle Routing and Scheduling Problems with Time Window Constraints"
-
-### Books
-- "Handbook of Metaheuristics" - Gendreau & Potvin (2019)
-- "Local Search in Combinatorial Optimization" - Aarts & Lenstra (1997)
-
-## 👨‍💻 Tác giả
-
-Được phát triển cho môn Tối ưu hóa lập kế hoạch bởi nhóm 2 với các thành viên:
-- Hà Minh Hiếu
-- Trần Đức Chính
-- Đoàn Duy Tùng
-- Ngô Đức Chung
-
-## 📄 License
-
-Free to use for educational purposes.
-
----
-
-**Chúc bạn tối ưu thành công! 🚀**
-
-Nếu có vấn đề hoặc câu hỏi, hãy thử các modes khác nhau hoặc điều chỉnh parameters.
-
+Dự án VRPTW Optimization - HUST 2022
