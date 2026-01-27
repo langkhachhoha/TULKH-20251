@@ -17,7 +17,6 @@ def read_input():
     return n, customers, travel_time
 
 def branch_and_bound_solve(n, customers, travel_time, time_limit=60):
-    """Branch and Bound algorithm using priority queue"""
     start_time = time.time()
     best_cost = float('inf')
     best_route = None
@@ -25,14 +24,11 @@ def branch_and_bound_solve(n, customers, travel_time, time_limit=60):
     nodes_pruned = 0
     
     def calculate_lower_bound(current_cost, remaining, current_pos):
-        """Calculate lower bound for the remaining problem"""
         if not remaining:
             return current_cost
         
-        # Minimum cost to reach any remaining customer
         min_to_reach = min(travel_time[current_pos][c] for c in remaining)
         
-        # MST approximation for remaining customers
         remaining_list = list(remaining)
         mst_cost = 0
         
@@ -60,7 +56,6 @@ def branch_and_bound_solve(n, customers, travel_time, time_limit=60):
                 return self.lower_bound < other.lower_bound
             return self.cost < other.cost
     
-    # Initialize
     initial_remaining = set(range(1, n + 1))
     initial_lb = calculate_lower_bound(0, initial_remaining, 0)
     initial_node = Node([], initial_remaining, 0, 0, 0, initial_lb)
@@ -72,19 +67,16 @@ def branch_and_bound_solve(n, customers, travel_time, time_limit=60):
         
         nodes_explored += 1
         
-        # Pruning
         if node.lower_bound >= best_cost:
             nodes_pruned += 1
             continue
         
-        # Complete solution
         if not node.remaining:
             if node.cost < best_cost:
                 best_cost = node.cost
                 best_route = node.route[:]
             continue
         
-        # Branch
         for customer_id in node.remaining:
             if time.time() - start_time >= time_limit:
                 break
@@ -93,26 +85,21 @@ def branch_and_bound_solve(n, customers, travel_time, time_limit=60):
             arrival_time = node.current_time + travel
             customer = customers[customer_id - 1]
             
-            # Check feasibility
             if arrival_time > customer['latest']:
                 continue
             
-            # Calculate new state
             start_service = max(arrival_time, customer['earliest'])
             new_time = start_service + customer['duration']
             new_cost = node.cost + travel
             
-            # Pruning
             if new_cost >= best_cost:
                 nodes_pruned += 1
                 continue
             
-            # Create new node
             new_route = node.route + [customer_id]
             new_remaining = node.remaining - {customer_id}
             new_lb = calculate_lower_bound(new_cost, new_remaining, customer_id)
             
-            # Pruning
             if new_lb >= best_cost:
                 nodes_pruned += 1
                 continue
@@ -123,7 +110,6 @@ def branch_and_bound_solve(n, customers, travel_time, time_limit=60):
     elapsed = time.time() - start_time
     
     if best_route is None:
-        # Return a simple greedy solution as fallback
         best_route = list(range(1, n + 1))
     
     return best_route, best_cost
@@ -131,7 +117,6 @@ def branch_and_bound_solve(n, customers, travel_time, time_limit=60):
 def solve():
     n, customers, travel_time = read_input()
     
-    # Set time limit based on problem size
     if n <= 10:
         time_limit = 60
     elif n <= 100:

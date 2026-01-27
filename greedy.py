@@ -41,7 +41,6 @@ def is_feasible(route, customers, travel_time, t0=0):
     return calculate_total_time(route, customers, travel_time, t0) != float('inf')
 
 def greedy_nearest_neighbor(n, customers, travel_time, t0=0):
-    """Greedy algorithm: always select the nearest feasible customer"""
     route = []
     visited = set()
     current_time = t0
@@ -64,7 +63,6 @@ def greedy_nearest_neighbor(n, customers, travel_time, t0=0):
                     best_cost = travel
                     best_next = i
         
-        # If no feasible customer found, pick any remaining
         if best_next == -1:
             for i in range(1, n + 1):
                 if i not in visited:
@@ -84,17 +82,14 @@ def greedy_nearest_neighbor(n, customers, travel_time, t0=0):
     return route
 
 def greedy_earliest_deadline(n, customers, travel_time, t0=0):
-    """Greedy algorithm: select customer with earliest deadline first"""
     route = sorted(range(1, n + 1), key=lambda x: customers[x-1]['earliest'])
     return route
 
 def greedy_latest_deadline(n, customers, travel_time, t0=0):
-    """Greedy algorithm: select customer with latest deadline first"""
     route = sorted(range(1, n + 1), key=lambda x: customers[x-1]['latest'])
     return route
 
 def greedy_urgency_ratio(n, customers, travel_time, t0=0):
-    """Greedy algorithm: select based on urgency ratio (time window / distance)"""
     route = []
     visited = set()
     current_time = t0
@@ -113,15 +108,13 @@ def greedy_urgency_ratio(n, customers, travel_time, t0=0):
             customer = customers[i - 1]
             
             if arrival_time <= customer['latest']:
-                # Calculate urgency: smaller window and closer distance = higher priority
                 time_window = customer['latest'] - customer['earliest']
-                urgency_ratio = (time_window + 1) / (travel + 1)  # Add 1 to avoid division by zero
+                urgency_ratio = (time_window + 1) / (travel + 1)  
                 
                 if urgency_ratio < best_ratio:
                     best_ratio = urgency_ratio
                     best_next = i
         
-        # If no feasible customer found, pick any remaining
         if best_next == -1:
             for i in range(1, n + 1):
                 if i not in visited:
@@ -147,7 +140,6 @@ def solve():
     best_overall_route = None
     best_overall_cost = float('inf')
     
-    # Try different greedy strategies and pick the best
     strategies = [
         ('nearest', greedy_nearest_neighbor),
         ('earliest', greedy_earliest_deadline),
@@ -164,7 +156,6 @@ def solve():
                 best_overall_route = route
                 best_overall_cost = cost
     
-    # If no feasible solution found, use nearest neighbor as fallback
     if best_overall_route is None:
         best_overall_route = greedy_nearest_neighbor(n, customers, travel_time)
     
